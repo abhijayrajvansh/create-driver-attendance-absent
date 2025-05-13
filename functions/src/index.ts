@@ -9,7 +9,6 @@
 // The key is how onRequest is called.
 // import * as functions from "firebase-functions"; // This seems to be resolving to v2 in your setup
 import { onRequest } from "firebase-functions/v2/https"; // Explicit v2 import for clarity
-import { Request, Response } from "express";
 import { db } from "./firebase/admin"; // Assuming this path is correct for your project structure
 import { DriversAttendance, DailyAttendance } from "./types"; // Assuming this path is correct
 import { Timestamp } from "firebase-admin/firestore";
@@ -17,7 +16,7 @@ import { Timestamp } from "firebase-admin/firestore";
 // Cloud function that can be triggered via HTTP request (using v2 API syntax)
 export const createDriversAttendanceAbsent = onRequest(
   { region: "asia-south1" }, // <-- Specify the region options object here for v2
-  async (req: Request, res: Response) => {
+  async (request, response) => {
     try {
       const driverCollectionRef = db.collection("drivers");
       const attendanceCollectionRef = db.collection("attendance");
@@ -26,7 +25,7 @@ export const createDriversAttendanceAbsent = onRequest(
 
       if (querySnapshot.empty) {
         console.error("No driver UIDs found");
-        res.status(400).send("No driver UIDs found");
+        response.status(400).send("No driver UIDs found");
         return;
       }
 
@@ -69,7 +68,11 @@ export const createDriversAttendanceAbsent = onRequest(
             const todayMonth = today.getMonth();
             const todayDay = today.getDate();
 
-            return entryYear === todayYear && entryMonth === todayMonth && entryDay === todayDay;
+            return (
+              entryYear === todayYear &&
+              entryMonth === todayMonth &&
+              entryDay === todayDay
+            );
           });
 
           if (!todayExists) {
@@ -87,12 +90,14 @@ export const createDriversAttendanceAbsent = onRequest(
 
       await Promise.all(promises);
       console.log("Successfully updated attendance records for all drivers");
-      res
+      response
         .status(200)
         .send("Successfully updated attendance records for all drivers");
     } catch (error) {
       console.error("Error creating drivers attendance:", error);
-      res.status(500).send("Failed to create drivers attendance: " + String(error));
+      response
+        .status(500)
+        .send("Failed to create drivers attendance: " + String(error));
     }
   }
 );
