@@ -7,7 +7,8 @@
     "shell": "npm run build && npx firebase functions:shell",
     "start": "npm run shell",
     "deploy": "npx firebase deploy --only functions",
-    "logs": "npx firebase functions:log"
+    "logs": "npx firebase functions:log",
+    "relogin": "npx firebase logout && npx firebase login"
   },
   "engines": {
     "node": "22"
